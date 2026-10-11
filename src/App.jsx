@@ -1,239 +1,241 @@
-import { useEffect } from "react";
-import NodeField from "./components/NodeField.jsx";
-import { certifications, education, experience, profile, projects, skills } from "./data.js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { complete, run } from "./commands.jsx";
+import Boot from "./components/Boot.jsx";
+import Neofetch from "./components/Neofetch.jsx";
+import SensorChart from "./components/SensorChart.jsx";
+import { Contact, Education, Experience, Projects, Skills, Whoami } from "./components/Sections.jsx";
+import StatusBar from "./components/StatusBar.jsx";
+import Typed from "./components/Typed.jsx";
+import { profile, themes } from "./data.js";
 
-const nav = [
-  ["about", "About"],
-  ["work", "Experience"],
-  ["projects", "Projects"],
-  ["skills", "Skills"],
-  ["contact", "Contact"],
-];
+const reduceMotion =
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// Fade sections in as they scroll into view.
-function useReveal() {
-  useEffect(() => {
-    const els = document.querySelectorAll(".reveal");
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add("in");
-            io.unobserve(e.target);
-          }
-        }
-      },
-      { threshold: 0.12 },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
+function store(kind, key, value) {
+  try {
+    const s = kind === "local" ? window.localStorage : window.sessionStorage;
+    if (value === undefined) return s.getItem(key);
+    s.setItem(key, value);
+  } catch {
+    return null;
+  }
 }
 
-function SectionHead({ index, title }) {
+// The page is a terminal session that has already "run" these commands.
+const SECTIONS = [
+  { id: "about", nav: "about", cmd: "neofetch", body: <Neofetch /> },
+  { id: "demo", nav: "demo", cmd: "./anomaly-detector --live", body: <SensorChart /> },
+  { id: "experience", nav: "experience", cmd: "git log --graph experience", body: <Experience /> },
+  { id: "projects", nav: "projects", cmd: "tree projects/", body: <Projects anchor /> },
+  { id: "skills", nav: "skills", cmd: "skills --list", body: <Skills /> },
+  { id: "education", nav: null, cmd: "cat education.txt", body: <Education /> },
+  { id: "contact", nav: "contact", cmd: "contact", body: <Contact /> },
+];
+
+const STATUS_SECTIONS = ["top", ...SECTIONS.map((s) => s.id), "shell"];
+
+const QUICK = ["help", "neofetch", "projects", "anomaly", "theme", "contact"];
+
+function Prompt({ children }) {
   return (
-    <header className="section-head">
-      <span className="mono">{index}</span>
-      <h2>{title}</h2>
-    </header>
+    <>
+      <span className="ps1" aria-hidden="true">
+        <span className="accent">{profile.handle}@portfolio</span>
+        <span className="dim">:</span>
+        <span className="path">~</span>
+        <span className="dim">$</span>{" "}
+      </span>
+      {children}
+    </>
   );
 }
 
 export default function App() {
-  useReveal();
+  const [theme, setThemeState] = useState(() => {
+    const saved = store("local", "theme");
+    return themes.includes(saved) ? saved : themes[0];
+  });
+  const [booted, setBooted] = useState(() => reduceMotion || store("session", "booted") === "1");
+  const [heroDone, setHeroDone] = useState(booted);
+  const [entries, setEntries] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [histIdx, setHistIdx] = useState(-1);
+  const [input, setInput] = useState("");
+  const inputRef = useRef(null);
+  const endRef = useRef(null);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    store("local", "theme", theme);
+  }, [theme]);
+
+  const finishBoot = useCallback(() => {
+    store("session", "booted", "1");
+    setBooted(true);
+  }, []);
+  const finishHero = useCallback(() => setHeroDone(true), []);
+
+  // Reveal sections as they scroll into view.
+  useEffect(() => {
+    if (!heroDone) return;
+    const io = new IntersectionObserver(
+      (es) =>
+        es.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.08 },
+    );
+    document.querySelectorAll(".block").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [heroDone]);
+
+  useEffect(() => {
+    if (entries.length) endRef.current?.scrollIntoView({ block: "end", behavior: reduceMotion ? "auto" : "smooth" });
+  }, [entries]);
+
+  function execute(cmd) {
+    const ctx = {
+      theme,
+      history,
+      setTheme: setThemeState,
+      clear: () => {
+        setEntries([]);
+        return null;
+      },
+    };
+    const out = run(cmd, ctx);
+    if (cmd.trim().split(/\s+/)[0] !== "clear") {
+      setEntries((e) => [...e, { id: Date.now() + Math.random(), cmd, out }]);
+    }
+    if (cmd.trim()) setHistory((h) => [...h, cmd.trim()]);
+    setHistIdx(-1);
+    setInput("");
+  }
+
+  function onKeyDown(e) {
+    if (e.key === "Enter") {
+      execute(input);
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      const c = complete(input);
+      if (c) setInput(c);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!history.length) return;
+      const i = histIdx === -1 ? history.length - 1 : Math.max(0, histIdx - 1);
+      setHistIdx(i);
+      setInput(history[i]);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (histIdx === -1) return;
+      const i = histIdx + 1;
+      if (i >= history.length) {
+        setHistIdx(-1);
+        setInput("");
+      } else {
+        setHistIdx(i);
+        setInput(history[i]);
+      }
+    } else if (e.key === "l" && e.ctrlKey) {
+      e.preventDefault();
+      setEntries([]);
+    }
+  }
 
   return (
     <>
-      <a className="skip" href="#main">Skip to content</a>
+      {!booted && <Boot onDone={finishBoot} />}
 
-      <nav className="topbar" aria-label="Primary">
+      <a className="skip" href="#main">
+        Skip to content
+      </a>
+
+      <nav className="topbar" aria-label="Sections">
         <a href="#top" className="brand">
-          vc<span>.</span>
+          <span className="accent">~</span>/{profile.handle}
         </a>
         <ul>
-          {nav.map(([id, label]) => (
-            <li key={id}>
-              <a href={`#${id}`}>{label}</a>
+          {SECTIONS.filter((s) => s.nav).map((s) => (
+            <li key={s.id}>
+              <a href={`#${s.id}`}>{s.nav}</a>
             </li>
           ))}
+          <li>
+            <a href={profile.resume} target="_blank" rel="noreferrer" className="accent">
+              resume ↗
+            </a>
+          </li>
         </ul>
       </nav>
 
-      <header className="hero" id="top">
-        <NodeField />
-        <div className="hero-inner">
-          <p className="mono eyebrow">
-            <span className="dot" /> {profile.role} · {profile.location}
-          </p>
-          <h1>
-            Venya <em>Chowdhery</em>
-          </h1>
-          <p className="lede">{profile.tagline}</p>
-          <div className="actions">
-            <a className="btn primary" href="#projects">
-              See my work
-            </a>
-            <a className="btn" href={`mailto:${profile.email}`}>
-              Get in touch
-            </a>
+      <main id="main" className="term">
+        <section id="top" className="hero" aria-label="Introduction">
+          <div className="cmd">
+            <Prompt>
+              <Typed text="whoami" start={booted} instant={reduceMotion || heroDone} onDone={finishHero} />
+            </Prompt>
           </div>
-        </div>
-        <a className="scroll-cue mono" href="#about" aria-label="Scroll to About">
-          scroll ↓
-        </a>
-      </header>
+          <div className={`out${heroDone ? " shown" : ""}`}>{heroDone && <Whoami heading />}</div>
+        </section>
 
-      <main id="main">
-        <section id="about" className="section reveal">
-          <SectionHead index="01" title="About" />
-          <div className="about-grid">
-            <div className="prose">
-              {profile.about.map((p) => (
-                <p key={p.slice(0, 20)}>{p}</p>
+        {heroDone &&
+          SECTIONS.map((s) => (
+            <section key={s.id} id={s.id} className="block" aria-labelledby={`${s.id}-cmd`}>
+              <h2 className="cmd" id={`${s.id}-cmd`}>
+                <Prompt>{s.cmd}</Prompt>
+                <span className="sr-only"> — {s.id}</span>
+              </h2>
+              <div className="out">{s.body}</div>
+            </section>
+          ))}
+
+        {heroDone && (
+          <section id="shell" className="shell" aria-label="Interactive terminal">
+            <p className="dim shell-intro">
+              # this part is live. type a command, or click one:{" "}
+              {QUICK.map((q) => (
+                <button key={q} type="button" className="chip-btn" onClick={() => execute(q)}>
+                  {q}
+                </button>
+              ))}
+            </p>
+
+            <div aria-live="polite">
+              {entries.map((en) => (
+                <div key={en.id} className="entry">
+                  <div className="cmd">
+                    <Prompt>{en.cmd}</Prompt>
+                  </div>
+                  {en.out != null && <div className="out">{en.out}</div>}
+                </div>
               ))}
             </div>
-            <dl className="facts">
-              <div>
-                <dt className="mono">Based in</dt>
-                <dd>{profile.location}</dd>
-              </div>
-              <div>
-                <dt className="mono">Studied</dt>
-                <dd>B.E. Computer Science, BITS Pilani Dubai</dd>
-              </div>
-              <div>
-                <dt className="mono">Focus</dt>
-                <dd>Anomaly detection, LLM systems, automation</dd>
-              </div>
-            </dl>
-          </div>
-        </section>
 
-        <section id="work" className="section reveal">
-          <SectionHead index="02" title="Experience" />
-          <ol className="timeline">
-            {experience.map((job) => (
-              <li key={job.company} className="job">
-                <div className="job-meta mono">{job.period}</div>
-                <div>
-                  <h3>
-                    {job.role} <span className="at">@ {job.company}</span>
-                  </h3>
-                  <ul>
-                    {job.points.map((pt) => (
-                      <li key={pt.slice(0, 24)}>{pt}</li>
-                    ))}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section id="projects" className="section reveal">
-          <SectionHead index="03" title="Selected projects" />
-          <div className="projects">
-            {projects.map((p, i) => (
-              <article key={p.title} className="card">
-                <div className="card-top">
-                  <span className="mono num">{String(i + 1).padStart(2, "0")}</span>
-                  {p.stat && (
-                    <span className="stat">
-                      <strong>{p.stat.value}</strong>
-                      <span className="mono">{p.stat.label}</span>
-                    </span>
-                  )}
-                </div>
-                <h3>{p.title}</h3>
-                <p>{p.description}</p>
-                <p className="muted">{p.detail}</p>
-                <div className="card-foot">
-                  <ul className="tags">
-                    {p.tags.map((t) => (
-                      <li key={t} className="mono">
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
-                  {p.link && (
-                    <a className="mono card-link" href={p.link} target="_blank" rel="noreferrer">
-                      code ↗
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section id="skills" className="section reveal">
-          <SectionHead index="04" title="Skills & education" />
-          <div className="skills-grid">
-            {Object.entries(skills).map(([group, items]) => (
-              <div key={group}>
-                <h3 className="mono group">{group}</h3>
-                <ul className="chips">
-                  {items.map((s) => (
-                    <li key={s}>{s}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <div className="edu-grid">
-            {education.map((e) => (
-              <div key={e.school} className="edu">
-                <span className="mono">{e.period}</span>
-                <h3>{e.school}</h3>
-                <p>{e.degree}</p>
-                <p className="muted">{e.detail}</p>
-              </div>
-            ))}
-            <div className="edu">
-              <span className="mono">Certifications</span>
-              <ul className="certs">
-                {certifications.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section id="contact" className="section contact reveal">
-          <SectionHead index="05" title="Contact" />
-          <p className="big">
-            Open to AI / ML roles and interesting problems.{" "}
-            <a href={`mailto:${profile.email}`}>Say hello →</a>
-          </p>
-          <ul className="links">
-            <li>
-              <a href={`mailto:${profile.email}`}>
-                <span className="mono">Email</span>
-                {profile.email}
-              </a>
-            </li>
-            <li>
-              <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                <span className="mono">LinkedIn</span>
-                venya-chowdhery ↗
-              </a>
-            </li>
-            <li>
-              <a href={profile.github} target="_blank" rel="noreferrer">
-                <span className="mono">GitHub</span>
-                venya10 ↗
-              </a>
-            </li>
-          </ul>
-        </section>
+            <label className="cmd input-line" ref={endRef}>
+              <Prompt>
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={onKeyDown}
+                  aria-label="Terminal command"
+                  placeholder="type 'help'"
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  enterKeyHint="go"
+                />
+              </Prompt>
+            </label>
+          </section>
+        )}
       </main>
 
-      <footer className="footer mono">
-        <span>© {new Date().getFullYear()} Venya Chowdhery</span>
-        <a href="#top">back to top ↑</a>
-      </footer>
+      <StatusBar theme={theme} sections={STATUS_SECTIONS} ready={heroDone} />
     </>
   );
 }

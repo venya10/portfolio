@@ -1,10 +1,10 @@
 # Venya Chowdhery — Portfolio
 
-Personal portfolio site built with React + Vite. Live at **https://venya10.github.io/portfolio/**.
+Terminal-style personal portfolio built with React + Vite. Live at **https://venya10.github.io/portfolio/**.
 
 ## Editing content
 
-All text (bio, experience, projects, skills, education) lives in [`src/data.js`](src/data.js). Edit it, commit, and push — the site redeploys automatically.
+All text (bio, experience, projects, skills, education) lives in [`src/data.js`](src/data.js). Interactive prompt commands live in [`src/commands.jsx`](src/commands.jsx); add a command by adding one entry to the `commands` object. The resume served by the site is `public/Venya_Chowdhery_Resume.pdf`. Edit it, commit, and push — the site redeploys automatically.
 
 ## Local development
 

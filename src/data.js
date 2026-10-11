@@ -2,101 +2,143 @@
 
 export const profile = {
   name: "Venya Chowdhery",
+  handle: "venya",
   role: "AI / ML Engineer",
   location: "Dubai, UAE",
   tagline:
-    "I build systems that learn from messy real-world data — anomaly detection on fleet telemetry, retrieval-augmented agents, and automations that quietly remove busywork.",
-  about: [
-    "I'm a Computer Science graduate from BITS Pilani, Dubai Campus, with a minor in Data Science. Most of my work sits where machine learning meets operations: taking noisy sensor streams, documents, or audio and turning them into something a team can act on.",
-    "Right now I'm an AI intern at NEXA Digital Marketing, shipping chatbots, voicebots and n8n workflows for clients. Before that I spent six months at Tenderd building an anomaly-detection pipeline for construction-fleet telemetry.",
-  ],
+    "I build applied AI that ships: LLM assistants used by 44,600+ people, agentic automations that turn briefs into live campaigns, and anomaly detection on messy sensor data.",
   email: "venyachowdhery@gmail.com",
   linkedin: "https://www.linkedin.com/in/venya-chowdhery-b588b0292",
   github: "https://github.com/venya10",
+  resume: `${import.meta.env.BASE_URL}Venya_Chowdhery_Resume.pdf`,
+  status: "open to work",
 };
 
+// Shown in the `neofetch` card.
+export const fetchInfo = [
+  ["Role", "AI / ML Engineer"],
+  ["Location", "Dubai, UAE (GST, UTC+4)"],
+  ["Visa", "UAE Golden Visa"],
+  ["Currently", "AI Intern @ NEXA Digital Marketing"],
+  ["Education", "B.E. Computer Science, BITS Pilani Dubai"],
+  ["Stack", "Python · LangGraph · FastAPI · Next.js"],
+  ["ML", "LLM agents · RAG · anomaly detection · CV"],
+  ["Shell", "curiosity --verbose"],
+];
+
+// Rendered as `git log --graph`. `hash` is just decoration.
 export const experience = [
   {
+    hash: "a3f9c21",
+    head: true,
     company: "NEXA Digital Marketing",
     role: "Artificial Intelligence Intern",
-    period: "Jul 2026 — Present",
+    period: "Jul 2026 — present",
     points: [
-      "Built and deployed AI-powered chatbots and voicebots on the Chipp platform, designing conversational workflows tailored to each client.",
-      "Developed an automated employee expense-reimbursement system in Python that ties together Slack, Google Sheets, Google Drive and email.",
-      "Built n8n workflow automations connecting apps and services to cut manual work across internal operations.",
+      "Built and deployed customer-facing LLM chatbots and voicebots on WhatsApp for clients including Rove Hotels, Nest Hotels and Marjan, reaching 44,600+ unique users.",
+      "Built a full-stack account intelligence hub (Next.js, TypeScript, PostgreSQL/Prisma, Claude API) that uses LLMs to extract action items from Slack, Gmail and Fireflies for human review, with per-account dashboards and automated security testing.",
+      "Engineered an agentic n8n + LLM pipeline that turns client ad briefs into live Meta ad campaigns after client approval, plus reporting with 24-hour insights and 48-hour scale / adjust / kill recommendations.",
+      "Delivered client-facing financial dashboards (HTML, JavaScript) with an embedded AI chatbot for natural-language access to performance data.",
+      "Automated expense reimbursement across Slack, Sheets and Drive, cutting processing time by about 70%.",
     ],
   },
   {
+    hash: "7be41d0",
     company: "Tenderd",
     role: "Artificial Intelligence Intern",
     period: "Jan 2026 — Jul 2026",
     points: [
-      "Built an end-to-end ML pipeline on telemetry sensor data (extraction, EDA, feature engineering), using Isolation Forest and autoencoders to detect sensor malfunctions across fleets.",
-      "Engineered rule-based detection for loose sensors and data-exhaustion events to catch connectivity failures early.",
-      "Automated PPE-detection labelling by plugging a custom YOLOv11-nano model into Label Studio's ML backend.",
-      "Worked with engineering and ops teams on validation and QA so anomaly flags stayed reliable across fleet equipment.",
+      "Built an end-to-end ML pipeline on fleet telemetry (extraction, EDA, feature engineering) with Isolation Forest and autoencoder models to detect sensor malfunctions and equipment deviations.",
+      "Engineered rule-based detectors for loose sensors and data-exhaustion events to catch connectivity failures and enable proactive maintenance.",
+      "Automated PPE-detection labelling by integrating a custom YOLOv11-nano model into Label Studio's ML backend.",
+      "Validated anomaly flags with engineering and operations teams through QA workflows before fleet-wide deployment.",
     ],
   },
   {
+    hash: "1c0ffee",
     company: "Oasis Investment, Al Shirawi Group",
     role: "Digital Solutions Intern",
     period: "Jun 2024 — Aug 2024",
     points: [
-      "Improved the GUI of an internal Angular supplier-registration portal: form usability, validation and visual consistency.",
-      "Built pages for a Streamlit intern-management portal covering tracking, task assignment and progress reporting.",
-      "Drafted a PR-FAQ for ConferEase, a proposed conference-room booking app: target users, value proposition and roadmap.",
+      "Delivered GUI and UX improvements for an Angular supplier-registration portal.",
+      "Built intern-tracking and progress-reporting pages for HR.",
+      "Authored a product PR/FAQ for ConferEase, a proposed conference-room booking app.",
     ],
   },
 ];
 
+// `slug` is the folder name shown in `ls projects/` and used by `open <slug>`.
 export const projects = [
   {
+    slug: "n8n-copilot",
+    title: "n8n Copilot",
+    stack: ["Python", "FastAPI", "Sentence-Transformers", "Chrome MV3", "GitHub Actions"],
+    description:
+      "A Chrome extension that suggests the next node while you build an n8n workflow. Rankings blend transition statistics mined from 494 real workflow templates with semantic search; the 90/10 blend was chosen by evaluation, not guesswork. Deployed on Render with CI.",
+    metrics: ["Recall@5 54.7%", "Recall@10 70.1%", "1,547 held-out edges"],
+    links: [["source", "https://github.com/venya10/n8n"]],
+  },
+  {
+    slug: "agentic-research-assistant",
     title: "Agentic Research Assistant",
-    tags: ["RAG", "LLMs", "Python"],
+    stack: ["LangGraph", "Chroma", "Sentence-Transformers", "Streamlit"],
     description:
-      "A multi-agent RAG system that breaks complex questions into sub-tasks, retrieves the relevant context, and composes grounded, multi-step answers.",
-    detail:
-      "Covers ingestion, chunking, embeddings, semantic vector retrieval, and an evidence-validation step that cuts down hallucinations.",
+      "Planner, research, evidence, critic and writer agents orchestrated with LangGraph. It decomposes a question, retrieves evidence from your documents, marks each claim SUPPORTED / PARTIAL / UNSUPPORTED, and writes a cited report.",
+    links: [["source", "https://github.com/venya10/agentic_research_assistant"]],
   },
   {
+    slug: "samsung-mena-intel",
+    title: "Samsung MENA Marketing Intelligence",
+    stack: ["Python", "SQL", "Gemini", "HTML/JS"],
+    description:
+      "A case-study marketing intelligence system: data cleaning and modelling, cross-market efficiency benchmarking, an early-warning rules engine that compares each market with its peers, an executive dashboard, and an AI assistant that answers by running read-only SQL instead of guessing.",
+    links: [
+      ["live demo", "https://samsung-marketing-dashboard.onrender.com/"],
+      ["source", "https://github.com/venya10/Samsung_casestudy"],
+    ],
+  },
+  {
+    slug: "ai-recruitment-screening",
+    title: "AI Recruitment Screening Pipeline",
+    stack: ["Python", "LLMs (Groq)", "human-in-the-loop"],
+    description:
+      "A staged LLM screening pipeline: generates a scoring rubric for human approval, scores candidates, audits the scores for bias and re-scores anonymised profiles when bias is flagged. Ranking stays blocked until the audit passes, and every LLM call is logged.",
+    links: [["source", "https://github.com/venya10/assessment"]],
+  },
+  {
+    slug: "summarease",
     title: "SummarEase",
-    tags: ["Generative AI", "NLP", "Streamlit"],
+    stack: ["Whisper", "BART", "Llama 3.3 70B", "Streamlit"],
     description:
-      "Speech-to-text and summarization for long-form audio: meetings, lectures and interviews.",
-    detail:
-      "Whisper for transcription, BART for context-aware summaries, and a LLaMA 3.3 chatbot for follow-up Q&A, served as a real-time Streamlit app.",
-    link: "https://github.com/venya10/Speech-to-Text-Summarizer",
+      "Upload long-form audio, get a Whisper transcript and a BART summary, then ask questions about it with a Llama 3.3 chatbot.",
+    links: [["source", "https://github.com/venya10/Speech-to-Text-Summarizer"]],
   },
   {
-    title: "Air Quality Prediction",
-    tags: ["ANFIS", "Python", "MATLAB"],
+    slug: "aqi-prediction",
+    title: "AQI Prediction",
+    stack: ["ANFIS (MATLAB)", "Random Forest", "Python"],
     description:
-      "An adaptive neuro-fuzzy inference system that predicts AQI from multi-pollutant sensor readings.",
-    detail:
-      "Lag and moving-average features for time-series modelling; beat a Random Forest baseline.",
-    stat: { value: "0.93", label: "R²" },
+      "Predicts the Air Quality Index for Indian cities from 29,531 daily pollution records, with lag and moving-average features. A neuro-fuzzy ANFIS model beat a Random Forest baseline.",
+    metrics: ["ANFIS R² 0.938", "RMSE 26.7"],
+    links: [["source", "https://github.com/venya10/AQI-Prediction"]],
   },
   {
+    slug: "car-price-prediction",
     title: "Used Car Price Prediction",
-    tags: ["XGBoost", "scikit-learn", "Power BI"],
+    stack: ["XGBoost", "scikit-learn", "Power BI"],
     description:
-      "An end-to-end pipeline that predicts used-car prices in the Dubai market.",
-    detail:
-      "Tuned XGBoost, Linear Regression and Random Forest models, with Power BI dashboards for pricing and depreciation insights.",
+      "Price prediction on 4,009 used-car listings with engineered features (horsepower, mileage per year, age) and a Power BI dashboard for price drivers.",
+    metrics: ["XGBoost R² 0.83", "MAE ≈ $5.3k"],
+    links: [["source", "https://github.com/venya10/Car-Price-Prediction-Visualization"]],
   },
 ];
 
 export const skills = {
-  "Machine learning": [
-    "Anomaly detection",
-    "Deep learning",
-    "Computer vision (YOLO)",
-    "NLP",
-    "RAG & LLM agents",
-    "Time series",
-  ],
-  "Languages": ["Python", "C++", "C", "Java", "SQL", "HTML"],
-  "Tools": ["scikit-learn", "n8n", "Streamlit", "Label Studio", "Power BI", "MATLAB", "Angular", "Git"],
+  "genai": ["RAG", "LangChain", "LangGraph", "AI agents", "multi-agent systems", "tool calling", "ChromaDB", "embeddings", "vector search"],
+  "llmops": ["LLM APIs", "prompt engineering", "guardrails", "human-in-the-loop", "LLM evaluation", "LoRA"],
+  "vision": ["image classification", "object detection (YOLO)", "segmentation", "ViT", "Google Earth Engine"],
+  "ml": ["Python", "SQL", "PyTorch", "TensorFlow", "scikit-learn", "Hugging Face", "CNNs", "LSTM", "BERT", "autoencoders", "Java", "C++"],
+  "full-stack": ["FastAPI", "REST APIs", "Next.js", "React", "TypeScript", "PostgreSQL", "Docker", "Git", "CI/CD", "GCP", "n8n", "Power BI"],
 };
 
 export const education = [
@@ -104,13 +146,13 @@ export const education = [
     school: "BITS Pilani, Dubai Campus",
     degree: "B.E. Computer Science, Minor in Data Science",
     detail: "CGPA 8.5 / 10",
-    period: "2022 — 2026",
+    period: "Sep 2022 — Jul 2026",
   },
   {
     school: "The Indian High School, Dubai",
     degree: "Senior Secondary (CBSE)",
     detail: "Class XII 91.5% · Class X 93.6%",
-    period: "2018 — 2022",
+    period: "Apr 2018 — Jun 2022",
   },
 ];
 
@@ -119,3 +161,6 @@ export const certifications = [
   "Data Structures in C++ — Coding Ninjas",
   "Artificial Intelligence — Teachnook",
 ];
+
+// First entry is the default.
+export const themes = ["light", "dark", "dracula", "matrix", "amber"];

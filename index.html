@@ -4,16 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Venya Chowdhery — AI / ML Engineer</title>
+    <meta name="theme-color" content="#fff6fa" />
     <meta name="description" content="Venya Chowdhery is an AI / ML engineer in Dubai building anomaly detection pipelines, RAG systems, and workflow automation." />
     <meta property="og:title" content="Venya Chowdhery — AI / ML Engineer" />
-    <meta property="og:description" content="AI / ML engineer in Dubai. Projects, experience and contact." />
+    <meta property="og:description" content="AI / ML engineer in Dubai. A terminal-style portfolio: projects, experience and a live anomaly-detection demo." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      try {
+        var t = localStorage.getItem("theme");
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
